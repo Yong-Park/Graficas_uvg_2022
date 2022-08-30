@@ -1,7 +1,5 @@
 import struct
-
-def color (r,g,b):
-    return bytes([b,g,r])
+from lib import *
 
 class Texture:
     def __init__(self,path):
