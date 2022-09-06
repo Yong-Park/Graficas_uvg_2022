@@ -72,6 +72,8 @@ class Render(object):
         y = (z * x).norm()
 
         self.loadViewMatrix(x,y,z,center)
+        self.loadProjectionMatrix(eye,center)
+        self.loadViewportMatrix()
 
     def loadViewMatrix(self, x, y, z, center):
         Mi = matrix([
@@ -81,15 +83,37 @@ class Render(object):
             [0,0,0,1]
         ])
 
-        O = matrix([
+        Op = matrix([
             [1,0,0,-center.x],
             [0,1,0,-center.y],
             [0,0,1,-center.z],
             [0,0,0,1]
         ])
 
-        self.View = Mi @ O
+        self.View = Mi @ Op
         
+    def loadProjectionMatrix(self,eye,center):
+        coeff = -1/(eye.__length__() - center.__length__())
+        self.Projection = matrix([
+            [1,0,0,0],
+            [0,1,0,0],
+            [0,0,1,0],
+            [0,0,coeff,1],
+        ])
+
+    def loadViewportMatrix(self):
+        x= 0
+        y= 0
+        w = self.width/2
+        h = self.height/2
+
+        self.Viewport = matrix([
+            [w,0,0,x+w],
+            [0,h,0,y+h],
+            [0,0,128,128],
+            [0,0,0,1],
+        ])
+
 
     def clear(self):
         self.framebuffer = [
@@ -130,7 +154,10 @@ class Render(object):
 
         Light = self.light
         Normal = (B-A) * (C-A)
-        i = Normal.norm() @ Light.norm()
+        try:
+            i = Normal.norm() @ Light.norm()
+        except:
+            i = 1
         if i < 0:
             return
 
@@ -152,7 +179,11 @@ class Render(object):
 
                 z = A.z * w + B.z * v + C.z * u
                 try:
-                    if (self.zBuffer[x][y] < z):
+                    if (x >= 0 and
+                        y >= 0 and
+                        x < len(self.zBuffer) and  
+                        y < len(self.zBuffer[0]) and 
+                        self.zBuffer[x][y] < z):
                         self.zBuffer[x][y] = z
 
                         if self.active_texture:
@@ -186,7 +217,7 @@ class Render(object):
             1
         ]
 
-        transformed_vertex =  self.Model @ augmented_vertex @ self.View
+        transformed_vertex =  self.Viewport @ self.Projection @ self.View @ self.Model @ augmented_vertex 
         transformed_vertex = V3(transformed_vertex)
         
         return V3(
@@ -298,13 +329,13 @@ class Render(object):
 
 pi =3.1416
                         
-scale_factor = (400,400,500)
-translate_factor = (512,512, 0)
-rotate_factor = (0,pi/3,0)
+scale_factor = (1/2,1/2,1/2)
+translate_factor = (0,0,0)
+rotate_factor = (-1/2,0,2)
 r = Render(1024, 1024)
-r.set_current_color(BLACK)
-r.lookAt(V3(-5,0,10),V3(0,0,0),V3(0,1,0))
+#r.set_current_color(BLACK)
+r.lookAt(V3(0,-1,5),V3(0,0,0),V3(0,1,0))
 r.active_texture = Texture("./modelos/Penguin.bmp")
 r.render_obj('./modelos/Penguin.obj',translate_factor,scale_factor,rotate_factor)
 r.draw('TRIANGLES') 
-r.write('t.bmp')
+r.write('dutch.bmp')
