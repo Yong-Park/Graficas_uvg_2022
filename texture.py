@@ -48,7 +48,11 @@ class Texture:
             r = round(self.pixels[y][x][2] * intensity)
         except:
             r = 255 * intensity
-        return color(r,g,b)
+        return color(
+            max(min(r,255),0),
+            max(min(g,255),0),
+            max(min(b,255),0)
+            )
 
 # r = Render(1024,1024)
 # t = Texture("./modelos/model.bmp")

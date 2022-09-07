@@ -1,4 +1,3 @@
-from re import A
 from texture import *
 from numpy import *
 from vector import *
@@ -14,7 +13,8 @@ class Render(object):
         self.vertex_buffer_object = []
         self.active_vertex_array = []
         self.active_texture = None
-        self.light = V3(0,0,-1)
+        self.active_shader = None
+        self.light = V3(0,0,1)
         self.Model = None
         self.View = None
 
@@ -124,6 +124,25 @@ class Render(object):
             [-9999 for x in range(self.width)]
             for y in range(self.height)
         ]
+        
+    def shader(self, **kwargs):
+        w,u,v = kwargs['bar']
+        Light = kwargs['light']
+        A,B,C = kwargs['vertices']
+        tA, tB, tC = kwargs['texture_coordinates']
+        nA, nB, nC = kwargs['normals']
+        
+        iA = nA.norm() @ Light.norm()    
+        iB = nB.norm() @ Light.norm()   
+        iC = nC.norm() @ Light.norm()
+
+        i = iA * w + iB * u + iC * v    
+
+        if self.active_texture:
+            tx = tA.x * w +tB.x * u + tC.x * v
+            ty = tA.y * w +tB.y * u + tC.y * v
+
+            return self.active_texture.get_color_with_intensity(tx,ty,i)
 
     def point(self, x, y):
         if (0 < x < self.width and 0 < y < self.height):
@@ -151,21 +170,10 @@ class Render(object):
             tA = next(self.active_vertex_array)
             tB = next(self.active_vertex_array)
             tC = next(self.active_vertex_array)
-
-        Light = self.light
-        Normal = (B-A) * (C-A)
-        try:
-            i = Normal.norm() @ Light.norm()
-        except:
-            i = 1
-        if i < 0:
-            return
-
-        self.current_color = color(
-            round(255 * i),
-            round(255 * i),
-            round(255 * i)
-        )
+        if self.active_shader:
+            nA = next(self.active_vertex_array)
+            nB = next(self.active_vertex_array)
+            nC = next(self.active_vertex_array)
 
         min,max = bounding_box(A,B,C)
         min.round()
@@ -185,11 +193,14 @@ class Render(object):
                         y < len(self.zBuffer[0]) and 
                         self.zBuffer[x][y] < z):
                         self.zBuffer[x][y] = z
-
-                        if self.active_texture:
-                            tx = tA.x * w +tB.x * u + tC.x * v
-                            ty = tA.y * w +tB.y * u + tC.y * v
-                            self.current_color = self.active_texture.get_color_with_intensity(tx,ty,i)
+                        
+                        self.current_color = self.active_shader(
+                            bar = (w,u,v),
+                            vertices=(A,B,C),
+                            texture_coordinates = (tA,tB,tC),
+                            normals = (nA,nB,nC),
+                            light = self.light
+                            )
                         self.point(y,x)
                 except:
                     pass
@@ -253,16 +264,29 @@ class Render(object):
                     ft1 = face[0][1] - 1
                     ft2 = face[1][1] - 1
                     ft3 = face[2][1] - 1
-                    ft4 = face[3][1] - 1
 
                     vt1 = V3(*renderizar.tvertices[ft1])
                     vt2 = V3(*renderizar.tvertices[ft2])
                     vt3 = V3(*renderizar.tvertices[ft3])
-                    vt4 = V3(*renderizar.tvertices[ft4])
 
                     self.vertex_buffer_object.append(vt1)
                     self.vertex_buffer_object.append(vt2)
                     self.vertex_buffer_object.append(vt3)
+
+                try:
+                    fn1 = face[0][2] - 1
+                    fn2 = face[1][2] - 1
+                    fn3 = face[2][2] - 1
+
+                    vn1 = V3(*renderizar.nvertices[fn1])
+                    vn2 = V3(*renderizar.nvertices[fn2])
+                    vn3 = V3(*renderizar.nvertices[fn3])
+                
+                    self.vertex_buffer_object.append(vn1)
+                    self.vertex_buffer_object.append(vn2)
+                    self.vertex_buffer_object.append(vn3)
+                except:
+                    pass
                 #segunda parte del triangulo
                 self.vertex_buffer_object.append(v1)
                 self.vertex_buffer_object.append(v3)
@@ -271,18 +295,30 @@ class Render(object):
                 if self.active_texture:
 
                     ft1 = face[0][1] - 1
-                    ft2 = face[1][1] - 1
                     ft3 = face[2][1] - 1
                     ft4 = face[3][1] - 1
 
                     vt1 = V3(*renderizar.tvertices[ft1])
-                    vt2 = V3(*renderizar.tvertices[ft2])
                     vt3 = V3(*renderizar.tvertices[ft3])
                     vt4 = V3(*renderizar.tvertices[ft4])
 
                     self.vertex_buffer_object.append(vt1)
                     self.vertex_buffer_object.append(vt3)
                     self.vertex_buffer_object.append(vt4)
+                try:
+                    fn1 = face[0][2] - 1
+                    fn3 = face[2][2] - 1
+                    fn4 = face[3][2] - 1
+
+                    vn1 = V3(*renderizar.nvertices[fn1])
+                    vn3 = V3(*renderizar.nvertices[fn3])
+                    vn4 = V3(*renderizar.nvertices[fn4])
+                
+                    self.vertex_buffer_object.append(vn1)
+                    self.vertex_buffer_object.append(vn3)
+                    self.vertex_buffer_object.append(vn4)
+                except:
+                    pass
 
             if len(face) == 3:
                 f1 = face[0][0] - 1
@@ -310,6 +346,21 @@ class Render(object):
                     self.vertex_buffer_object.append(vt1)
                     self.vertex_buffer_object.append(vt2)
                     self.vertex_buffer_object.append(vt3)
+                
+                try:
+                    fn1 = face[0][2] - 1
+                    fn2 = face[1][2] - 1
+                    fn3 = face[2][2] - 1
+
+                    vn1 = V3(*renderizar.nvertices[fn1])
+                    vn2 = V3(*renderizar.nvertices[fn2])
+                    vn3 = V3(*renderizar.nvertices[fn3])
+                
+                    self.vertex_buffer_object.append(vn1)
+                    self.vertex_buffer_object.append(vn2)
+                    self.vertex_buffer_object.append(vn3)
+                except:
+                    pass
 
         self.active_vertex_array = iter(self.vertex_buffer_object)
 
@@ -329,13 +380,14 @@ class Render(object):
 
 pi =3.1416
                         
-scale_factor = (1/2,1/2,1/2)
+scale_factor = (3/4,3/4,3/4)
 translate_factor = (0,0,0)
-rotate_factor = (-1/2,0,2)
+rotate_factor = (0,3.5,0)
 r = Render(1024, 1024)
 #r.set_current_color(BLACK)
-r.lookAt(V3(0,-1,5),V3(0,0,0),V3(0,1,0))
+r.lookAt(V3(0,0,5),V3(0,0,0),V3(0,1,0))
 r.active_texture = Texture("./modelos/Penguin.bmp")
+r.active_shader = r.shader
 r.render_obj('./modelos/Penguin.obj',translate_factor,scale_factor,rotate_factor)
 r.draw('TRIANGLES') 
-r.write('dutch.bmp')
+r.write('t.bmp')

@@ -123,3 +123,13 @@ def line_algorithm(x0,y0,x1,y1):
                 y +=1 if y0 < y1 else -1
                 threshold += dx * 2
         return points
+
+def createMatrix (dataList):
+    matrix = []
+    for m in range(len(dataList)):
+        Listrow = []
+        for k in range(len(dataList[0])):
+            Listrow.append(dataList[len(dataList)* m + k])
+        matrix.append(Listrow)
+
+    return matrix
