@@ -1,8 +1,9 @@
 from texture import *
-from numpy import *
 from vector import *
 from convert_obj import *
 from lib import *
+from matrix import *
+from math import *
 
 class Render(object):
     def __init__(self, width, height):
@@ -23,14 +24,14 @@ class Render(object):
         scale = V3(*scale)
         rotate = V3(*rotate)
 
-        translation_matrix = matrix([
+        translation_matrix = Matrix([
             [1,0,0,translate.x],
             [0,1,0,translate.y],
             [0,0,1,translate.z],
             [0,0,0,1],
         ])
 
-        scale_matrix = matrix([
+        scale_matrix = Matrix([
             [scale.x,0,0,0],
             [0,scale.y,0,0],
             [0,0,scale.z,0],
@@ -38,30 +39,37 @@ class Render(object):
         ])
         
         a = rotate.x
-        rotation_x = matrix([
+        rotation_x = Matrix([
             [1,0,0,0],
             [0,cos(a),-sin(a),0],
             [0,sin(a),cos(a),0],
             [0,0,0,1],
         ])
         a = rotate.y
-        rotation_y = matrix([
+        rotation_y = Matrix([
             [cos(a),0,sin(a),0],
             [0,1,0,0],
             [-sin(a),0,cos(a),0],
             [0,0,0,1],
         ])
         a = rotate.z
-        rotation_z = matrix([
+        rotation_z = Matrix([
             [cos(a),-sin(a),0,0],
             [sin(a),cos(a),0,0],
             [0,0,1,0],
             [0,0,0,1],
         ])
-
-        rotation_matrix = rotation_x @ rotation_y @ rotation_z
-
-        self.Model = translation_matrix @ rotation_matrix @ scale_matrix
+        # print("___")
+        # print('x rotation: ', rotation_x)
+        # print('y rotation: ', rotation_y)
+        # print('z rotation: ', rotation_z)
+        rotation_matrix = (Matrix(rotation_x @ rotation_y) @ rotation_z)
+        # print("___")
+        # print('transtaltion_matrix: ',translation_matrix)
+        # print('rotation_matrix: ',rotation_matrix)
+        # print('scale_matrix: ',scale_matrix)
+        self.Model = Matrix(translation_matrix @ rotation_matrix) @ scale_matrix
+        # print('self model: ', self.Model)
 
     def write(self,filename):
         writebmp(filename,self.width,self.height,self.framebuffer)
@@ -76,14 +84,14 @@ class Render(object):
         self.loadViewportMatrix()
 
     def loadViewMatrix(self, x, y, z, center):
-        Mi = matrix([
+        Mi = Matrix([
             [x.x,x.y,x.z,0],
             [y.x,y.y,y.z,0],
             [z.x,z.y,z.z,0],
             [0,0,0,1]
         ])
 
-        Op = matrix([
+        Op = Matrix([
             [1,0,0,-center.x],
             [0,1,0,-center.y],
             [0,0,1,-center.z],
@@ -94,7 +102,7 @@ class Render(object):
         
     def loadProjectionMatrix(self,eye,center):
         coeff = -1/(eye.__length__() - center.__length__())
-        self.Projection = matrix([
+        self.Projection = Matrix([
             [1,0,0,0],
             [0,1,0,0],
             [0,0,1,0],
@@ -107,7 +115,7 @@ class Render(object):
         w = self.width/2
         h = self.height/2
 
-        self.Viewport = matrix([
+        self.Viewport = Matrix([
             [w,0,0,x+w],
             [0,h,0,y+h],
             [0,0,128,128],
@@ -186,24 +194,23 @@ class Render(object):
                     continue
 
                 z = A.z * w + B.z * v + C.z * u
-                try:
-                    if (x >= 0 and
-                        y >= 0 and
-                        x < len(self.zBuffer) and  
-                        y < len(self.zBuffer[0]) and 
-                        self.zBuffer[x][y] < z):
-                        self.zBuffer[x][y] = z
-                        
-                        self.current_color = self.active_shader(
-                            bar = (w,u,v),
-                            vertices=(A,B,C),
-                            texture_coordinates = (tA,tB,tC),
-                            normals = (nA,nB,nC),
-                            light = self.light
-                            )
-                        self.point(y,x)
-                except:
-                    pass
+                if (x >= 0 and
+                    y >= 0 and
+                    x < len(self.zBuffer) and  
+                    y < len(self.zBuffer[0]) and 
+                    self.zBuffer[x][y] < z):
+                    self.zBuffer[x][y] = z
+                    self.current_color = self.active_shader(
+                        bar = (w,u,v),
+                        vertices=(A,B,C),
+                        texture_coordinates = (tA,tB,tC),
+                        normals = (nA,nB,nC),
+                        light = self.light,
+                        coorinates = (x,y)
+                        )
+                    
+                    self.point(y,x)
+
 
     def triangle_wireframe(self):
         A = next(self.active_vertex_array)
@@ -228,7 +235,8 @@ class Render(object):
             1
         ]
 
-        transformed_vertex =  self.Viewport @ self.Projection @ self.View @ self.Model @ augmented_vertex 
+        transformed_vertex =  Matrix(Matrix(Matrix(self.Viewport @ self.Projection) @ self.View) @ self.Model) @ augmented_vertex 
+        print('transformed_vertex: ', transformed_vertex)
         transformed_vertex = V3(transformed_vertex)
         
         return V3(
@@ -242,13 +250,14 @@ class Render(object):
         self.loadModelMatrix(translate,scale,rotate)
         renderizar = Obj(objecto)
         #para que siempre este en el centro
+        print('+++++')
+        print('transformando los vertices')
         for face in renderizar.faces:
             if len(face) == 4:
                 f1 = face[0][0] - 1
                 f2 = face[1][0] - 1
                 f3 = face[2][0] - 1
                 f4 = face[3][0] - 1
-
                 v1 = self.transform_vertex(renderizar.vertices[f1])
                 v2 = self.transform_vertex(renderizar.vertices[f2])
                 v3 = self.transform_vertex(renderizar.vertices[f3])
@@ -377,17 +386,53 @@ class Render(object):
                     self.triangle_wireframe()
             except StopIteration:
                 print("terminado")
+import random
+
+def marte(**kwargs):
+    x,y = kwargs['coorinates']
+    #arriba
+    if y > 750 - random.randint(0,50) and x > 500 - random.randint(0,50) and x < 600 + random.randint(0,50):
+        return color(159,157,157)
+    elif x < 500 + random.randint(0,50):
+        if x > 300 and x < 400:
+            return color(255,255,255)
+        return color(168,101,75)
+        
+    elif x >= 500:
+        i = (x - 500)*0.5
+        r = 168 - i 
+        g = 101 - i
+        b = 75 - i
+
+        if 0<=r<=255:
+            pass
+        else:
+            r = 0
+        if 0<=g<=255:
+            pass
+        else:
+            g = 0
+        if 0<=b<=255:
+            pass
+        else:
+            b = 0
+        return color(r,g,b)
+    elif y > 200 and y < 300:
+        return color(255,0,255)
+
+    
 
 pi =3.1416
                         
-scale_factor = (3/4,3/4,3/4)
+scale_factor = (1,1,1)
 translate_factor = (0,0,0)
-rotate_factor = (0,3.5,0)
+rotate_factor = (0,0,0)
 r = Render(1024, 1024)
-#r.set_current_color(BLACK)
+r.set_current_color(BLACK)
 r.lookAt(V3(0,0,5),V3(0,0,0),V3(0,1,0))
-r.active_texture = Texture("./modelos/Penguin.bmp")
+r.active_texture = Texture("./modelos/model.bmp")
 r.active_shader = r.shader
-r.render_obj('./modelos/Penguin.obj',translate_factor,scale_factor,rotate_factor)
+# r.active_shader = marte
+r.render_obj('./modelos/model.obj',translate_factor,scale_factor,rotate_factor)
 r.draw('TRIANGLES') 
 r.write('t.bmp')
