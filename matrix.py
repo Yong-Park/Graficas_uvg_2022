@@ -1,35 +1,41 @@
-class Matrix(list):
-    # Matrix multiplication A @ B
+from array import array
 
-    def round(self):
-        self.x = round(self.x)
-        self.y = round(self.y)
-        self.z = round(self.z)
+class Matrix(object):
+    # Matrix multiplication A @ B
+    def __init__(self, matrix: array):
+        self.matrix = matrix   
 
     def __matmul__(self, B):
-        
-        N = len(self)
-        print('self: ', self)
-        M = len(self[0])
-        print('B: ', B)
-        if type(B[0]) is list:
-            P = len(B[0])
+        N = len(self.matrix)
+        # print('self: ', self.matrix)
+        M = len(self.matrix[0])
+        # print('B: ', B.matrix)
+        if type(B.matrix[0]) is list:
+            P = len(B.matrix[0])
         else:
             P = 1
         
         result = []
+        
         for i in range(N):
-            row = [0] * P
-            result.append(row)
-        if type(B[0]) is list:
+            result.append([])
+            for j in range(P):
+                result[i].append(0)
+        # print('N ', N)
+        # print('M ', M)
+        # print('P ', P)
+        if type(B.matrix[0]) is list:
             for i in range(N):
                 for j in range(P):
                     for k in range(M):
-                        result[i][j] += self[i][k] * B[k][j]
+                        result[i][j] += self.matrix[i][k] * B.matrix[k][j]
         else:
+            # print('N ', N)
+            # print('P ', P)
+            # print('M ', M)
             for i in range(N):
                 for j in range(P):
                     for k in range(M):
-                        result[i][j] += self[i][k] * B[j]
-
-        return result
+                        result[i][j] += self.matrix[i][k] * B.matrix[k]
+        # print('result ', result)
+        return Matrix(result)

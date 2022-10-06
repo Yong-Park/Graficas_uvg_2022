@@ -1,11 +1,14 @@
+from matrix import Matrix
+# from numpy import *
 class V3(object):
     def __init__(self, x, y = 0, z=0, w=1):
-        if (type(x) == list):
-            print('type x: ',x)
-            self.x =x[0][0]
-            self.y =x[1][0]
-            self.z =x[2][0]
-            self.w =x[3][0]
+        if (type(x) == Matrix):
+            # print('type x: ',x.matrix)
+            # self.x ,self.y,self.z, self.w= x.tolist()[0]
+            self.x =x.matrix[0][0]
+            self.y =x.matrix[1][0]
+            self.z =x.matrix[2][0]
+            self.w =x.matrix[3][0]
         else:
             self.x = x
             self.y = y
@@ -44,9 +47,8 @@ class V3(object):
             self.x * other.y - self.y * other.x
         )
 
-    # def __matmul__(self,other):
-    #     print('self, ' ,self)
-    #     return self.x * other.x + self.y * other.y + self.z * other.z
+    def __matmul__(self,other):
+        return self.x * other.x + self.y * other.y + self.z * other.z
 
     def __length__(self):
         return (self.x**2+self.y**2+self.z**2)**0.5
