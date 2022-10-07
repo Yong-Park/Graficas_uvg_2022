@@ -469,7 +469,9 @@ rotate_factor = (0,0,0)
 r = Render(1024, 1024)
 r.set_current_color(BLACK)
 r.lookAt(V3(0,0,5),V3(0,0,0),V3(0,1,0))
-# r.active_texture = Texture("./modelos/model.bmp")
+r.active_texture = Texture("./modelos/space.bmp")
+#pintar el fondo de pantalla
+r.framebuffer = r.active_texture.pixels
 # r.active_shader = r.shader
 r.active_shader = marte
 r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)
