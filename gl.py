@@ -430,19 +430,34 @@ import random
 def marte(**kwargs):
     x,y = kwargs['coorinates']
     #arriba
-    if y > 750 - random.randint(0,50) and x > 500 - random.randint(0,50) and x < 600 + random.randint(0,50):
-        return color(159,157,157)
+    if y > 760 - random.randint(0,50) and x > 500 - random.randint(0,50) and x < 550 + random.randint(0,50):
+        return color(109,104,96)
     elif x < 500 + random.randint(0,50):
-        if x > 300 and x < 400:
-            return color(255,255,255)
+        if x > 300- random.randint(0,50) and x < 450 + random.randint(0,50):
+            if 450 - random.randint(0,50) < y < 450 + random.randint(0,50):
+                return color(128,112,80)
+            elif 400 - random.randint(0,50) < x < 450 + random.randint(0,50):
+                if 400 - random.randint(0,50) < y < 450 + random.randint(0,50):
+                    return color(128,112,80)
+            if x > 350 - random.randint(0,50):
+                if 600 - random.randint(0,50) < y < 650 + random.randint(0,50):
+                    return color(128,112,80)
         return color(168,101,75)
+    elif y < 250 + random.randint(0,50) and x > 500 - random.randint(0,50) and x < 550 + random.randint(0,50):
+        return color(109,104,96)
         
-    elif x >= 500:
-        i = (x - 500)*0.5
+    elif x >= 400:
+        i = (x - 400)*0.4
         r = 168 - i 
         g = 101 - i
         b = 75 - i
-
+        
+        if 500 - random.randint(0,50) < x < 600 + random.randint(0,50):
+            if 400 - random.randint(0,50)< y < 550 + random.randint(0,50):
+                return color(98,78,68)
+        if 680 - random.randint(0,50) < x < 700 + random.randint(0,50):
+            if 400 - random.randint(0,50)< y < 650 + random.randint(0,50):
+                return color(58,38,28)
         if 0<=r<=255:
             pass
         else:
@@ -456,16 +471,60 @@ def marte(**kwargs):
         else:
             b = 0
         return color(r,g,b)
-    elif y > 200 and y < 300:
-        return color(255,0,255)
 
+def phobos(**kwargs):
+    x,y = kwargs['coorinates']
+    if 820 - random.randint(0,5)< x < 830 + random.randint(0,5):
+        if 500 - random.randint(0,5)< y < 510 + random.randint(0,5):
+            return color(188,188,190)
+    if x >= 750:
+        i = (x - 750)*0.5
+        r = 181 - i 
+        g = 149 - i
+        b = 128 - i
+    if 0<=r<=255:
+        pass
+    else:
+        r = 0
+    if 0<=g<=255:
+        pass
+    else:
+        g = 0
+    if 0<=b<=255:
+        pass
+    else:
+        b = 0
+    return color(r,g,b)    
     
+def deimos(**kwargs):
+    x,y = kwargs['coorinates']
+    if 970 - random.randint(0,5)< x < 980 + random.randint(0,5):
+        if 510 - random.randint(0,5)< y < 520 + random.randint(0,5):
+            return color(188,188,190)
+    if x >= 850:
+        i = (x - 750)*0.5
+        r = 181 - i 
+        g = 149 - i
+        b = 128 - i
+    if 0<=r<=255:
+        pass
+    else:
+        r = 0
+    if 0<=g<=255:
+        pass
+    else:
+        g = 0
+    if 0<=b<=255:
+        pass
+    else:
+        b = 0
+    return color(r,g,b)    
 
 pi =3.1416
                         
 scale_factor = (1,1,1)
 translate_factor = (0,0,0)
-rotate_factor = (0,0,0)
+rotate_factor = (2,0,pi/2)
 r = Render(1024, 1024)
 r.set_current_color(BLACK)
 r.lookAt(V3(0,0,5),V3(0,0,0),V3(0,1,0))
@@ -473,7 +532,22 @@ r.active_texture = Texture("./modelos/space.bmp")
 #pintar el fondo de pantalla
 r.framebuffer = r.active_texture.pixels
 # r.active_shader = r.shader
+#para marte
 r.active_shader = marte
 r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)
 r.draw('TRIANGLES') 
-r.write('t.bmp')
+#su luna phobos
+scale_factor = (1/8,1/8,1/8)
+translate_factor = (5/8,0,0)
+rotate_factor = (0,0,0)
+r.active_shader = phobos
+r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)
+r.draw('TRIANGLES') 
+#luna deimos
+scale_factor = (1/8,1/8,1/8)
+translate_factor = (7/8,0,0)
+rotate_factor = (0,0,0)
+r.active_shader = deimos
+r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)
+r.draw('TRIANGLES') 
+r.write('marte.bmp')
