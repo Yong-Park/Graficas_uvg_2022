@@ -225,7 +225,7 @@ class Render(object):
                     self.current_color = self.active_shader(
                         bar = (w,u,v),
                         vertices=(A,B,C),
-                        # texture_coordinates = (tA,tB,tC),
+                        texture_coordinates = (tA,tB,tC),
                         normals = (nA,nB,nC),
                         light = self.light,
                         coorinates = (x,y)
@@ -522,32 +522,81 @@ def deimos(**kwargs):
 
 pi =3.1416
                         
-scale_factor = (1,1,1)
-translate_factor = (0,0,0)
-rotate_factor = (2,0,pi/2)
+
 r = Render(1024, 1024)
 r.set_current_color(BLACK)
-r.lookAt(V3(0,0,5),V3(0,0,0),V3(0,1,0))
-r.active_texture = Texture("./modelos/space.bmp")
+r.lookAt(V3(-1,0,5),V3(0,0,0),V3(0,1,0))
+r.active_texture = Texture("./modelos/Flatland.bmp")
 #pintar el fondo de pantalla
 r.framebuffer = r.active_texture.pixels
-# r.active_shader = r.shader
+r.active_shader = r.shader
+
+#cubo de tierra
+scale_factor = (1/20,1/20,1/20)
+translate_factor = (-0.52,-0.25,1)
+rotate_factor = (0,0,0)
+r.active_texture = Texture("./modelos/Grass.bmp")
+r.active_shader = r.shader
+r.render_obj('./modelos/GRASS_BLOCK.obj',translate_factor,scale_factor,rotate_factor)
+r.draw('TRIANGLES') 
+#creeper
+scale_factor = (1/6,1/6,1/6)
+translate_factor = (2/3,0,0)
+rotate_factor = (0,-pi/4,0)
+r.active_texture = Texture("./modelos/creeper.bmp")
+r.active_shader = r.shader
+r.render_obj('./modelos/Creeper.obj',translate_factor,scale_factor,rotate_factor)
+r.draw('TRIANGLES') 
+#steve
+scale_factor = (1/50,1/50,1/50)
+translate_factor = (-2/4,-1/2,0)
+rotate_factor = (0,-pi/6,0)
+r.active_texture = Texture("./modelos/steve.bmp")
+r.active_shader = r.shader
+r.render_obj('./modelos/steve.obj',translate_factor,scale_factor,rotate_factor)
+r.draw('TRIANGLES') 
+#axe in head
+scale_factor = (1/300,1/300,1/300)
+translate_factor = (0.75,0.15,-0.1)
+rotate_factor = (0,0,pi/4)
+r.active_texture = Texture("./modelos/axe.bmp")
+r.active_shader = r.shader
+r.render_obj('./modelos/axe.obj',translate_factor,scale_factor,rotate_factor)
+r.draw('TRIANGLES') 
+#axe on ground
+scale_factor = (1/200,1/200,1/200)
+translate_factor = (0,-0.5,0)
+rotate_factor = (-pi/3,0,0)
+r.active_texture = Texture("./modelos/axe.bmp")
+r.active_shader = r.shader
+r.render_obj('./modelos/axe.obj',translate_factor,scale_factor,rotate_factor)
+r.draw('TRIANGLES')
+#bee
+scale_factor = (1/100,1/100,1/100)
+translate_factor = (0,-0.25,0)
+rotate_factor = (0,-pi/8,0)
+r.active_texture = Texture("./modelos/tnt.bmp")
+r.active_shader = r.shader
+r.render_obj('./modelos/tnt.obj',translate_factor,scale_factor,rotate_factor)
+r.draw('TRIANGLES')
+
+r.write('proyeto_1.bmp')
+
+# r.draw('TRIANGLES') 
 #para marte
-r.active_shader = marte
-r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)
-r.draw('TRIANGLES') 
-#su luna phobos
-scale_factor = (1/8,1/8,1/8)
-translate_factor = (5/8,0,0)
-rotate_factor = (0,0,0)
-r.active_shader = phobos
-r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)
-r.draw('TRIANGLES') 
-#luna deimos
-scale_factor = (1/8,1/8,1/8)
-translate_factor = (7/8,0,0)
-rotate_factor = (0,0,0)
-r.active_shader = deimos
-r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)
-r.draw('TRIANGLES') 
-r.write('marte.bmp')
+# r.active_shader = marte
+# r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)
+# r.draw('TRIANGLES') 
+# #su luna phobos
+# scale_factor = (1/8,1/8,1/8)
+# translate_factor = (5/8,0,0)
+# rotate_factor = (0,0,0)
+# r.active_shader = phobos
+# r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)
+# r.draw('TRIANGLES') 
+# #luna deimos
+# scale_factor = (1/8,1/8,1/8)
+# translate_factor = (7/8,0,0)
+# rotate_factor = (0,0,0)
+# r.active_shader = deimos
+# r.render_obj('./modelos/sphere.obj',translate_factor,scale_factor,rotate_factor)

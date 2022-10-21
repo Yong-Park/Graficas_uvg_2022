@@ -84,9 +84,12 @@ def writebmp(filename, width, height, framebuffer):
         f.write(dword(0))
 
         #pixel data
-        for y in range(height):
-            for x in range(width):
-                f.write(framebuffer[y][x])
+        try:
+            for y in range(height):
+                for x in range(width):
+                    f.write(framebuffer[y][x])
+        except:
+            pass
 
         f.close()
 
